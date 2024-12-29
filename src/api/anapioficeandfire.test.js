@@ -1,29 +1,30 @@
-/* eslint-env jest */
+const axios = require("axios");
+const { getListOfRestEndPoint, getBooks } = require("./anapioficeandfire");
 
-const apiIceAndFire = require('./anapioficeandfire')
+jest.mock("axios");
 
-jest.mock('./anapioficeandfire', () => {
-    const originalModule = jest.requireActual('./anapioficeandfire');
-    const resp = require('../__mocksData__/api.json')
-    return {
-        __esModule: true,
-        ...originalModule,
-        getListOfRestEndPoint: function () {
-            return new Promise((resolve, reject) => {
-                resolve({entity: resp})
-            })
-        },
-    };
+describe("API tests with mocked data", () => {
+  it("should load API endpoint data", async () => {
+    axios.get.mockResolvedValueOnce({
+      data: {
+        books: [{ url: "https://www.anapioficeandfire.com/api/book/3" }],
+      },
+    });
+
+    const data = await getListOfRestEndPoint();
+    expect(data.books).toBeDefined();
+    expect(data.books[0].url).toEqual(
+      "https://www.anapioficeandfire.com/api/book/3"
+    );
+  });
+
+  it("should load books data", async () => {
+    axios.get.mockResolvedValueOnce({
+      data: [{ url: "https://www.anapioficeandfire.com/api/book/3" }],
+    });
+
+    const data = await getBooks();
+    expect(data).toBeDefined();
+    expect(data[0].url).toEqual("https://www.anapioficeandfire.com/api/book/3");
+  });
 });
-
-describe('#getBooks() using Promises', () => {
-    it('should load books data', () => {
-        apiIceAndFire.getListOfRestEndPoint()
-            .then(data => {
-                expect(data.entity.books).toBeDefined()
-                expect(data.entity.books).toEqual('https://www.anapioficeandfire.com/api/books')
-                expect(data.entity.houses).toBeDefined()
-                expect(data.entity.houses).toEqual('https://www.anapioficeandfire.com/api/houses')
-            })
-    })
-})
